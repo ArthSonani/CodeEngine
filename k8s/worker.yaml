@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: engine-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: engine-worker
+  template:
+    metadata:
+      labels:
+        app: engine-worker
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: worker
+        image: engine-worker:latest
+        imagePullPolicy: Never
+        env:
+          - name: KAFKA_BROKER
+            value: "kafka.default.svc.cluster.local:9092"
+        securityContext:
+          privileged: true

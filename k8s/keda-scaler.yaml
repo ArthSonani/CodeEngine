@@ -1,0 +1,18 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: kafka-worker-scaler
+spec:
+  scaleTargetRef:
+    name: engine-worker
+  minReplicaCount: 0
+  maxReplicaCount: 10
+  pollingInterval: 5
+  cooldownPeriod: 60
+  triggers:
+  - type: kafka
+    metadata:
+      bootstrapServers: kafka.default.svc.cluster.local:9092
+      topic: code-submissions
+      consumerGroup: isolate-workers
+      lagThreshold: "5"

@@ -1,0 +1,17 @@
+# Binaries and compiled objects
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+
+# Go workspaces
+vendor/
+
+# OS specific
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
