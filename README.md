@@ -39,7 +39,7 @@ Follow these steps to deploy the self-healing cluster to your local machine.
 ### 1. Start the Kubernetes Cluster
 Boot Minikube using the Docker driver. This avoids heavy virtual machines.
 ```bash
-minikube start --driver=docker
+minikube start --driver=docker --ports=30080:30080
 ```
 
 ### 2. Run the Deployment Script
@@ -59,54 +59,14 @@ chmod +x start.sh
 ---
 
 ## 🧪 Testing the Pipeline (End-to-End)
-Because Docker network routing differs by operating system, follow the specific testing instructions for your machine.
 
-### 🍎 For macOS Users
-macOS runs Docker inside a hidden virtual machine, meaning your Mac cannot reach the cluster IP directly. You must open a network tunnel.
-
-**Open a Tunnel (Terminal 1):** Leave this command running in the background.
+**Send a Payload:**
+Replace `YOUR-WEBHOOK-UUID` with your actual webhook URL in test_engine.sh. 
 
 ```bash
-minikube service engine-api --url
+chmod +x test_engine.sh
+./test_engine.sh
 ```
-*(It will output a URL like `http://127.0.0.1:51234`)*
-
-**Send a Payload (Terminal 2):** Use the URL provided by the previous step to send a test payload. Replace `YOUR_TUNNEL_PORT` and the `webhook_url`:
-
-```bash
-curl -X POST http://127.0.0.1:YOUR_TUNNEL_PORT/submit \
--H "Content-Type: application/json" \
--d '{
-      "id": "mac-test-1",
-      "language": "python",
-      "code": "print("Execution Successful!")",
-      "webhook_url": "https://webhook.site/YOUR-WEBHOOK-UUID"
-    }'
-```
-
-### 🐧🪟 For Linux & Windows (WSL2) Users
-Linux and WSL2 attach Docker directly to the host network, so you can hit the cluster IP instantly.
-
-**Get the Cluster IP:**
-
-```bash
-minikube ip
-```
-
-**Send a Payload:** Replace `<MINIKUBE_IP>` with the address from the previous step.
-
-```bash
-curl -X POST http://<MINIKUBE_IP>:30080/submit \
--H "Content-Type: application/json" \
--d '{
-      "id": "linux-test-1",
-      "language": "python",
-      "code": "print("Execution Successful!")",
-      "webhook_url": "https://webhook.site/YOUR-WEBHOOK-UUID"
-    }'
-```
-
----
 
 ## 📈 Verifying the Autoscaler (0-to-10 Burst Test)
 To watch the engine scale dynamically under load:
@@ -117,10 +77,6 @@ To watch the engine scale dynamically under load:
 kubectl get pods -l app=engine-worker -w
 ```
 
-**Fire a 50-payload burst:** (containing a 10-second sleep to force a queue backlog). *Note: macOS users must swap the IP for their `127.0.0.1:PORT` tunnel.*
-
-```bash
-for i in {1..50}; do curl -s -X POST http://<YOUR_IP_OR_TUNNEL>/submit -H "Content-Type: application/json" -d '{"id": "burst-'$i'", "language": "python", "code": "import time; time.sleep(10); print("Burst Complete!")", "webhook_url": "https://webhook.site/YOUR-WEBHOOK-UUID"}' & done; wait
-```
+**Fire a 50-payload burst by running test_engine.sh on separate terminal** (containing a 10-second sleep to force a queue backlog). 
 
 Watch KEDA instantly provision 10 pods, process the Time-Limit-Exceeded (TLE) timeouts, deliver the webhooks, and cleanly scale back down to 0 after the 60-second cooldown window.
