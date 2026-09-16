@@ -6,6 +6,8 @@ Built for production-grade resilience, the system scales seamlessly based on rea
 
 ## 🏗 Architecture & Tech Stack
 
+<img width="1330" height="653" alt="Screenshot 2026-09-17 at 1 02 07 AM" src="https://github.com/user-attachments/assets/60242057-a5f3-4cac-8b1a-cc0089810d3f" />
+
 *   **API Gateway (Go / Gin):** Accepts incoming code execution payloads and immediately offloads them to the message broker.
 *   **Message Broker (Apache Kafka):** Buffers incoming tasks in the `code-submissions` topic, completely decoupling the API from the execution layer.
 *   **Autoscaler (KEDA):** Monitors Kafka queue lag. Idles at `0` pods to save resources, and instantly provisions up to `10` pods during traffic bursts.
